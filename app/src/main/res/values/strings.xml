@@ -665,8 +665,13 @@
     <string name="settings_locale_dialog_title" translatable="true">Choose your preferred language</string>
     <string name="settings_locale_dialog_neutral" translatable="true">Help translate this app</string>
 
+    <string name="enter_password">Enter Password</string>
+    <string name="error_empty_password">Password cannot be empty</string>
+    <string name="error_incorrect_password">Incorrect password</string>
+
     <string name="settings_biometeric_heading" translatable="true">Enable app lock</string>
     <string name="settings_biometric_desc" translatable="true">Secure this app using your screen lock</string>
+    <string name="submit">Submit</string>
 
     <string name="settings_selected_theme" translatable="true">Current theme: %1$s</string>
 

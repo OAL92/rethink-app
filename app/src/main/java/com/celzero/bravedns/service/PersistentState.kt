@@ -441,6 +441,11 @@ class PersistentState(context: Context) : SimpleKrate(context), KoinComponent {
     var universalRulesCount: MutableLiveData<Int> = MutableLiveData()
     private var proxyStatus: MutableLiveData<Int> = MutableLiveData()
 
+    // App Lock
+    var appLockEnabled by booleanPref("app_lock_enabled").withDefault(false)
+    var appLockPassword by stringPref("app_lock_password").withDefault("")
+    var appLockUnlocked: Boolean = false
+
     // data class to store dnscrypt relay details
     data class DnsCryptRelayDetails(val relay: DnsCryptRelayEndpoint, val added: Boolean)
 
