@@ -58,6 +58,7 @@ jobs:
         alias: ${{ secrets.SIGN_ALIAS }}
         keyStorePassword: ${{ secrets.SIGN_STORE_PASS }}
         keyPassword: ${{ secrets.SIGN_KEY_PASS }}
+        buildToolsVersion: 34.0.0
         
     - name: 📦 Upload Signed APK
       if: success()
