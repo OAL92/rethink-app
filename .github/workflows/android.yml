@@ -2,7 +2,7 @@ name: 🫣 Android CI
 
 on:
   push:
-    branches: [ "main", "custom-rethink-release" ]
+    branches: [ "main", "custom-resynthetic-release", "custom-rethink-release" ]
   pull_request:
     branches: [ "main", "custom-rethink-release" ]
 
@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Locked to Website Full for full 64-bit Samsung S23 (arm64-v8a) compatibility
       VARIANT: assembleWebsiteFullRelease
     steps:
     - name: 🥏 Checkout
@@ -22,16 +21,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
-            
+        
     - name: ⚡️ +x gradlew
       run: chmod +x gradlew
           
     - name: 🎪 Secrets
       if: success()
       run: |
-        mkdir -p app/src/debug
-        echo "${GSCV_TEST_JSON}" > app/src/debug/google-services.json
-        wc -lwm app/src/debug/google-services.json
+        mkdir -p app/src/website/debug
+        echo "${GSCV_TEST_JSON}" > app/src/website/google-services.json
+        echo "${GSCV_TEST_JSON}" > app/src/google-services.json
       env:
         GSCV_TEST_JSON: ${{ secrets.GOOGLE_SERVICES_TEST_JSON }}
             
@@ -49,18 +48,17 @@ jobs:
     - name: 📥 Install Legacy Build Tools
       if: success()
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
-            
+        
     - name: 🔐 Sign Release APK
       id: sign_app
       uses: r0adkll/sign-android-release@v1
       with:
-        # Corrected path for the Website build variant
         releaseDirectory: app/build/outputs/apk/websiteFull/release
         signingKeyBase64: ${{ secrets.SIGN_KEY_BASE64 }}
         alias: ${{ secrets.SIGN_ALIAS }}
         keyStorePassword: ${{ secrets.SIGN_STORE_PASS }}
         keyPassword: ${{ secrets.SIGN_KEY_PASS }}
-            
+        
     - name: 📦 Upload Signed APK
       if: success()
       uses: actions/upload-artifact@v4
