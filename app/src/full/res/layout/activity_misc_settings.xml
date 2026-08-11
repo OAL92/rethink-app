@@ -1002,6 +1002,60 @@
                     android:layout_marginEnd="16dp" />
 
                 <RelativeLayout
+                    android:id="@+id/settingsAppLockRl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/settings_app_lock_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="10dp"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_biometric" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_toEndOf="@id/settings_app_lock_icon"
+                        android:layout_toStartOf="@id/settingsAppLockSwitch"
+                        android:layout_centerVertical="true">
+
+                        <TextView
+                            android:id="@+id/settingsAppLockDesc"
+                            style="@style/TextAppearance.AppCompat.Subhead"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="App Lock"
+                            android:textSize="@dimen/large_font_text_view"/>
+
+                        <TextView
+                            android:id="@+id/settingsAppLockSubDesc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Enable App password protection"
+                            android:textSize="@dimen/default_font_text_view"
+                            android:paddingTop="4dp"/>
+                    </LinearLayout>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/settingsAppLockSwitch"
+                        style="@style/CustomWidget.MaterialComponents.CompoundButton.Switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:padding="10dp" />
+                </RelativeLayout>
+
+                <Button android:id="@+id/btnSetAppPassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Set / Change Password" android:visibility="gone"/>
+
+                <RelativeLayout
                     android:id="@+id/settings_biometric_rl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

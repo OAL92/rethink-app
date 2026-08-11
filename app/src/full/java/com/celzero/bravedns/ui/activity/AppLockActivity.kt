@@ -44,10 +44,19 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import androidx.appcompat.app.AlertDialog
+
+
+
+
+private val ENABLE_PASSWORD_PROTECTION_KEY = "enable_password_protection"
+private val PASSWORD_KEY = "user_password"
+
 
 class AppLockActivity : BaseActivity(R.layout.activity_app_lock) {
     private val persistentState by inject<PersistentState>()
-
+    
+    private var activeDialog: AlertDialog? = null
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
 
@@ -55,6 +64,7 @@ class AppLockActivity : BaseActivity(R.layout.activity_app_lock) {
         private const val TAG = "AppLockUi"
         const val APP_LOCK_ALIAS = ".ui.activity.LauncherAliasAppLock"
         const val HOME_ALIAS = ".ui.LauncherAliasHome"
+        private const val APP_LOCK_REQUEST_CODE = 101
     }
 
     // TODO - #324 - Usage of isDarkTheme() in all activities.
@@ -68,6 +78,14 @@ class AppLockActivity : BaseActivity(R.layout.activity_app_lock) {
         super.onCreate(savedInstanceState)
 
         handleFrostEffectIfNeeded(persistentState.theme)
+
+        // Check App Lock first
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        val passwordSet = prefs.getBoolean(ENABLE_PASSWORD_PROTECTION_KEY, false)
+        if ((persistentState.appLockEnabled && !persistentState.appLockUnlocked) || passwordSet) {
+            showPasswordDialog()
+            return
+        }
 
         if (isAtleastQ()) {
             val controller = WindowInsetsControllerCompat(window, window.decorView)
@@ -116,9 +134,34 @@ class AppLockActivity : BaseActivity(R.layout.activity_app_lock) {
         showBiometricPrompt()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // Show password only if lock is enabled and app is currently locked
+        if (persistentState.appLockEnabled && !persistentState.appLockUnlocked) {
+            showPasswordDialog()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Reset unlocked state when leaving app
+        persistentState.appLockUnlocked = false
+    }
+
+
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
         super.onNewIntent(intent, caller)
         setIntent(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Prevent window leaks and ghost dialogs by explicitly dismissing
+        if (activeDialog != null && activeDialog!!.isShowing) {
+            activeDialog!!.dismiss()
+        }
+        activeDialog = null
     }
 
     private fun showBiometricPrompt() {
@@ -184,5 +227,60 @@ class AppLockActivity : BaseActivity(R.layout.activity_app_lock) {
         } catch (_: Exception) {
             false
         }
+    }
+    private fun showPasswordDialog() {
+        val storedPassword = persistentState.appLockPassword
+        // If password is not set, go to home
+        if (storedPassword.isEmpty()) {
+            Toast.makeText(this, "Password not set", Toast.LENGTH_SHORT).show()
+            startHomeActivity()
+            return
+        }
+
+        // Avoid showing multiple dialogs
+        if (activeDialog != null && activeDialog!!.isShowing) return
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.enter_password)
+
+        val input = android.widget.EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+
+        builder.setView(input)
+            .setCancelable(false)
+            .setPositiveButton(R.string.submit, null)
+
+        activeDialog = builder.create()
+
+        activeDialog!!.setOnShowListener {
+            activeDialog!!.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val entered = input.text.toString()
+                when {
+                    entered == storedPassword -> {
+                        activeDialog!!.dismiss()
+
+                        // Unlock for this session
+                        persistentState.appLockUnlocked = true
+
+                        // Go to Home
+                        val intent = Intent(this, HomeScreenActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+                    entered.isEmpty() -> {
+                        Toast.makeText(this, R.string.error_empty_password, Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        Toast.makeText(this, R.string.error_incorrect_password, Toast.LENGTH_SHORT).show()
+                        input.text.clear()
+                    }
+                }
+            }
+        }
+
+        activeDialog!!.show()
     }
 }

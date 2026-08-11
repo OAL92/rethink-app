@@ -564,6 +564,22 @@ class MiscSettingsActivity : BaseActivity(R.layout.activity_misc_settings) {
     }
 
     private fun setupClickListeners() {
+
+        b.settingsAppLockSwitch.isChecked = persistentState.appLockEnabled
+        b.btnSetAppPassword.visibility = if (persistentState.appLockEnabled) View.VISIBLE else View.GONE
+
+        // Toggle button visibility when switch changes
+        b.settingsAppLockSwitch.setOnCheckedChangeListener { _, isChecked ->
+            b.btnSetAppPassword.visibility = if (isChecked) View.VISIBLE else View.GONE
+            persistentState.appLockEnabled = isChecked
+            logEvent("App lock enabled: $isChecked")
+        }
+
+       // Show password setup dialog when button is clicked
+        b.btnSetAppPassword.setOnClickListener {
+            showSetAppPasswordDialog()
+        }
+
         b.settingsActivityEnableLogsRl.setOnClickListener {
             b.settingsActivityEnableLogsSwitch.isChecked =
                 !b.settingsActivityEnableLogsSwitch.isChecked
@@ -970,7 +986,7 @@ class MiscSettingsActivity : BaseActivity(R.layout.activity_misc_settings) {
 
           // Add default/system locale option first
           map[getString(R.string.settings_locale_dialog_default)] = ""
-          
+
           // Add all available locales from locale_config.xml
           for (i in 0 until localeList.size()) {
               localeList[i]?.let { locale ->
@@ -1385,4 +1401,25 @@ class MiscSettingsActivity : BaseActivity(R.layout.activity_misc_settings) {
     }
 
     private fun io(f: suspend () -> Unit) = lifecycleScope.launch(Dispatchers.IO) { f() }
+
+    private fun showSetAppPasswordDialog() {
+        val editText = AppCompatEditText(this).apply {
+            hint = "Enter new password"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Set / Change App Password")
+            .setView(editText)
+            .setPositiveButton("Save") { dialog, _ ->
+                val password = editText.text.toString()
+                if (password.isNotEmpty()) {
+                    persistentState.appLockPassword = password
+                    Toast.makeText(this, "Password saved", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
 }
