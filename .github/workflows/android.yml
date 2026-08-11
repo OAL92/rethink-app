@@ -48,6 +48,10 @@ jobs:
           --warning-mode all
       env:
         VARIANT: ${{ env.VARIANT }}
+
+    - name: 📥 Install Legacy Build Tools
+      if: success()
+      run: sdkmanager "build-tools;29.0.3"
         
     - name: 🔐 Sign Release APK
       id: sign_app
@@ -58,7 +62,6 @@ jobs:
         alias: ${{ secrets.SIGN_ALIAS }}
         keyStorePassword: ${{ secrets.SIGN_STORE_PASS }}
         keyPassword: ${{ secrets.SIGN_KEY_PASS }}
-        buildToolsVersion: 34.0.0
         
     - name: 📦 Upload Signed APK
       if: success()
