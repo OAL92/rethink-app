@@ -10,34 +10,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Compiles the highly optimized release version
+      # Locked to Website Full for full 64-bit Samsung S23 (arm64-v8a) compatibility
       VARIANT: assembleWebsiteFullRelease
     steps:
     - name: 🥏 Checkout
       uses: actions/checkout@v4
-      
+          
     - name: ☕️ JDKv17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
-        
+            
     - name: ⚡️ +x gradlew
       run: chmod +x gradlew
-      
+          
     - name: 🎪 Secrets
       if: success()
       run: |
         mkdir -p app/src/debug
         echo "${GSCV_TEST_JSON}" > app/src/debug/google-services.json
         wc -lwm app/src/debug/google-services.json
-        if [ -z "$GSCV_TEST_JSON" ]; then
-          echo "VARIANT=assembleFdroidFullRelease" >> "$GITHUB_ENV"
-        fi
       env:
         GSCV_TEST_JSON: ${{ secrets.GOOGLE_SERVICES_TEST_JSON }}
-        
+            
     - name: 🚂 Assemble Release
       if: success()
       run: |
@@ -51,18 +48,19 @@ jobs:
 
     - name: 📥 Install Legacy Build Tools
       if: success()
-      run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
-        
+      run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
+            
     - name: 🔐 Sign Release APK
       id: sign_app
       uses: r0adkll/sign-android-release@v1
       with:
-        releaseDirectory: app/build/outputs/apk/fdroidFull/release
+        # Corrected path for the Website build variant
+        releaseDirectory: app/build/outputs/apk/websiteFull/release
         signingKeyBase64: ${{ secrets.SIGN_KEY_BASE64 }}
         alias: ${{ secrets.SIGN_ALIAS }}
         keyStorePassword: ${{ secrets.SIGN_STORE_PASS }}
         keyPassword: ${{ secrets.SIGN_KEY_PASS }}
-        
+            
     - name: 📦 Upload Signed APK
       if: success()
       uses: actions/upload-artifact@v4
