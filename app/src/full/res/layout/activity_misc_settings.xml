@@ -1043,9 +1043,9 @@
                             android:paddingTop="4dp"/>
                     </LinearLayout>
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
+                    <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/settingsAppLockSwitch"
-                        style="@style/CustomWidget.MaterialComponents.CompoundButton.Switch"
+                        style="@style/CustomWidget.Material3.CompoundButton.MaterialSwitch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
