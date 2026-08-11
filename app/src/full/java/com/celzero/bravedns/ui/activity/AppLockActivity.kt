@@ -52,13 +52,10 @@ private val ENABLE_PASSWORD_PROTECTION_KEY = "enable_password_protection"
 private val PASSWORD_KEY = "user_password"
 
 
-
-private var activeDialog: AlertDialog? = null
-
-
 class AppLockActivity : AppCompatActivity(R.layout.activity_app_lock) {
     private val persistentState by inject<PersistentState>()
-
+    
+    private var activeDialog: AlertDialog? = null
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
 
@@ -155,6 +152,15 @@ class AppLockActivity : AppCompatActivity(R.layout.activity_app_lock) {
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
         super.onNewIntent(intent, caller)
         setIntent(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Prevent window leaks and ghost dialogs by explicitly dismissing
+        if (activeDialog != null && activeDialog!!.isShowing) {
+            activeDialog!!.dismiss()
+        }
+        activeDialog = null
     }
 
     private fun showBiometricPrompt() {
