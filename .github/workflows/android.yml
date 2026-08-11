@@ -51,7 +51,7 @@ jobs:
 
     - name: 📥 Install Legacy Build Tools
       if: success()
-      run: sdkmanager "build-tools;29.0.3"
+      run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
         
     - name: 🔐 Sign Release APK
       id: sign_app
